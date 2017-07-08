@@ -1,0 +1,21 @@
+{
+  "variables": {
+    "domain_name": "{{ env `OS_PROJECT_DOMAIN_NAME` }}",
+    "private_key_file": "~/.ssh/selectel_rsa"
+  },
+  "builders":
+    [
+      {
+        "ssh_private_key_file": "{{user `private_key_file`}}",
+        "type": "selectel",
+        "ssh_keypair_name": "selectel" ,
+        "flavor": "m1.tiny",
+        "domain_name": "{{user `domain_name`}}",
+        "image_name": "express42-ubuntu16",
+        "ssh_username": "root",
+        "source_image": "ecf6d6cc-d6c7-4d06-a6d5-b741116927a5",
+        "boot_from_volume" : true,
+        "floating_ip" : "5.178.85.71"
+      }
+    ]
+}
