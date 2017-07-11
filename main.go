@@ -2,7 +2,7 @@ package main
 
 import (
   "github.com/mitchellh/packer/packer/plugin"
-  "github.com/vitkhab/packer-builder-selectel/builder/selectel"
+  "github.com/express42/packer-builder-selectel/builder/selectel"
 )
 
 func main() {
