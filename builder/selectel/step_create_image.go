@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"errors"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/images"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/volumeactions"
 	"github.com/hashicorp/packer/packer"
 	"github.com/mitchellh/multistep"
 )
@@ -16,9 +17,15 @@ type stepCreateImage struct{}
 
 func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	config := state.Get("config").(Config)
-	server := state.Get("server").(*servers.Server)
+	volume := state.Get("volume_id").(string)
 	ui := state.Get("ui").(packer.Ui)
 
+	blockStorageClient, err := config.blockStorageV2Client()
+	if err != nil {
+		err = fmt.Errorf("Error initializing block storage client: %s", err)
+		state.Put("error", err)
+		return multistep.ActionHalt
+	}
 	// We need the v2 compute client
 	client, err := config.computeV2Client()
 	if err != nil {
@@ -29,10 +36,12 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 
 	// Create the image
 	ui.Say(fmt.Sprintf("Creating the image: %s", config.ImageName))
-	imageId, err := servers.CreateImage(client, server.ID, servers.CreateImageOpts{
-		Name:     config.ImageName,
-		Metadata: config.ImageMetadata,
-	}).ExtractImageID()
+	res := UploadImage(blockStorageClient, volume, volumeactions.UploadImageOpts{
+		ImageName:     config.ImageName,
+		Force: true,
+	})
+	ui.Message(fmt.Sprintf("Image: %s", res.PrettyPrintJSON()))
+	err = res.ExtractErr()
 	if err != nil {
 		err := fmt.Errorf("Error creating image: %s", err)
 		state.Put("error", err)
@@ -40,6 +49,17 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionHalt
 	}
 
+	type ImageStruct struct {
+	    Id string `json:"image_id"`
+	}
+
+	type Response struct {
+    Image   ImageStruct `json:"os-volume_upload_image"`
+  }
+
+  resp := Response{}
+	res.ExtractInto(&resp)
+  imageId := resp.Image.Id
 	// Set the Image ID in the state
 	ui.Message(fmt.Sprintf("Image: %s", imageId))
 	state.Put("image", imageId)
@@ -85,6 +105,9 @@ func WaitForImage(client *gophercloud.ServiceClient, imageId string) error {
 
 		if image.Status == "ACTIVE" {
 			return nil
+		}
+		if image.Status == "DELETED" {
+			return errors.New(fmt.Sprintf("Could not create image %s", imageId))
 		}
 
 		log.Printf("Waiting for image creation status: %s (%d%%)", image.Status, image.Progress)
