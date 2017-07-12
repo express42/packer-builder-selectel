@@ -8,7 +8,7 @@
       {
         "ssh_private_key_file": "{{user `private_key_file`}}",
         "type": "selectel",
-        "ssh_keypair_name": "selectel" ,
+        "ssh_keypair_name": "Packer" ,
         "flavor": "m1.tiny",
         "domain_name": "{{user `domain_name`}}",
         "image_name": "express42-ubuntu16",

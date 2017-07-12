@@ -63,7 +63,7 @@ func (s *StepCreateVolume) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionHalt
 	}
 
-	state.Put("volume", s.volume)
+	state.Put("volume_id", s.volume.ID)
 
 	return multistep.ActionContinue
 }

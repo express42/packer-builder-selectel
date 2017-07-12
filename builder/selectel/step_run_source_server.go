@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/hashicorp/packer/packer"
 	"github.com/mitchellh/multistep"
@@ -28,6 +29,7 @@ type StepRunSourceServer struct {
 func (s *StepRunSourceServer) Run(state multistep.StateBag) multistep.StepAction {
 	config := state.Get("config").(Config)
 	flavor := state.Get("flavor_id").(string)
+	volume := state.Get("volume_id").(string)
 	ui := state.Get("ui").(packer.Ui)
 
 	// We need the v2 compute client
@@ -57,8 +59,8 @@ func (s *StepRunSourceServer) Run(state multistep.StateBag) multistep.StepAction
 
 	serverOpts := servers.CreateOpts{
 		Name:             s.Name,
-		ImageRef:         s.SourceImage,
-		ImageName:        s.SourceImageName,
+//		ImageRef:         s.SourceImage,
+//		ImageName:        s.SourceImageName,
 		FlavorRef:        flavor,
 		SecurityGroups:   s.SecurityGroups,
 		Networks:         networks,
@@ -80,7 +82,23 @@ func (s *StepRunSourceServer) Run(state multistep.StateBag) multistep.StepAction
 		serverOptsExt = serverOpts
 	}
 
-	s.server, err = servers.Create(computeClient, serverOptsExt).Extract()
+	bd := []bootfromvolume.BlockDevice{
+		bootfromvolume.BlockDevice{
+			UUID:                volume,
+			SourceType:          "volume",
+			DestinationType:     "volume",
+			//VolumeName: "disk-for-testing",
+			//VolumeType: "universal.ru-2a",
+		},
+	}
+
+	serverOptsExt = bootfromvolume.CreateOptsExt{
+		serverOptsExt,
+		bd,
+	}
+
+	ui.Say("Boot server from volume")
+	s.server, err = bootfromvolume.Create(computeClient, serverOptsExt).Extract()
 	if err != nil {
 		err := fmt.Errorf("Error launching source server: %s", err)
 		state.Put("error", err)
