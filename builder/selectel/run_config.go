@@ -18,6 +18,8 @@ type RunConfig struct {
 	SSHInterface         string              `mapstructure:"ssh_interface"`
 	SSHIPVersion         string              `mapstructure:"ssh_ip_version"`
 
+	VolumeType       string            `mapstructure:"volume_type"`
+	VolumeSize       int               `mapstructure:"volume_size"`
 	SourceImage      string            `mapstructure:"source_image"`
 	SourceImageName  string            `mapstructure:"source_image_name"`
 	Flavor           string            `mapstructure:"flavor"`

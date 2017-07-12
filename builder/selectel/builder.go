@@ -1,5 +1,5 @@
-// The openstack package contains a packer.Builder implementation that
-// builds Images for openstack.
+// The selectel package contains a packer.Builder implementation that
+// builds Images for selectel's openstack.
 
 package selectel
 
@@ -16,7 +16,7 @@ import (
 )
 
 // The unique ID for this builder
-const BuilderId = "mitchellh.openstack"
+const BuilderId = "express42.selectel"
 
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
@@ -81,6 +81,12 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			TemporaryKeyPairName: b.config.TemporaryKeyPairName,
 			PrivateKeyFile:       b.config.RunConfig.Comm.SSHPrivateKey,
 			SSHAgentAuth:         b.config.RunConfig.Comm.SSHAgentAuth,
+		},
+		&StepCreateVolume{
+		  ImageId: b.config.SourceImage,
+			Name: b.config.ImageName,
+			VolumeType: b.config.VolumeType,
+			Size: b.config.VolumeSize,
 		},
 		&StepRunSourceServer{
 			Name:             b.config.ImageName,

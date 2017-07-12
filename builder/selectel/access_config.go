@@ -155,6 +155,13 @@ func (c *AccessConfig) imageV2Client() (*gophercloud.ServiceClient, error) {
 	})
 }
 
+func (c *AccessConfig) blockStorageV2Client() (*gophercloud.ServiceClient, error) {
+	return openstack.NewBlockStorageV2(c.osClient, gophercloud.EndpointOpts{
+		Region:       c.Region,
+		Availability: c.getEndpointType(),
+	})
+}
+
 func (c *AccessConfig) getEndpointType() gophercloud.Availability {
 	if c.EndpointType == "internal" || c.EndpointType == "internalURL" {
 		return gophercloud.AvailabilityInternal

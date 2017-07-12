@@ -12,8 +12,10 @@
         "flavor": "m1.tiny",
         "domain_name": "{{user `domain_name`}}",
         "image_name": "express42-ubuntu16",
+        "volume_size": 10,
+        "volume_type": "basic.ru-2a",
         "ssh_username": "root",
-        "source_image": "ecf6d6cc-d6c7-4d06-a6d5-b741116927a5",
+        "source_image": "0f29b9c5-ba7e-478b-b753-d9067be3f1b7",
         "floating_ip" : "5.178.85.71"
       }
     ]
