@@ -45,7 +45,7 @@ func VolumeV2StateRefreshFunc(
 	}
 }
 
-func UploadImage(client *gophercloud.ServiceClient, id string, opts volumeactions.UploadImageOptsBuilder) (r volumeactions.UploadImageResult) {
+func UploadImage(client *gophercloud.ServiceClient, id string, opts volumeactions.UploadImageOptsBuilder) (r UploadImageResult) {
 	b, err := opts.ToVolumeUploadImageMap()
 	if err != nil {
 		r.Err = err
@@ -56,6 +56,27 @@ func UploadImage(client *gophercloud.ServiceClient, id string, opts volumeaction
 	})
 	return
 }
+
+type commonResult struct {
+	gophercloud.Result
+}
+
+type UploadImageResult struct {
+	commonResult
+}
+
+func (r commonResult) ExtractImageId() (string, error) {
+	type ImageStruct struct {
+	    Id string `json:"image_id"`
+	}
+
+	var s struct {
+    Image   ImageStruct `json:"os-volume_upload_image"`
+  }
+	err := r.ExtractInto(&s)
+	return s.Image.Id, err
+}
+
 
 func attachURL(c *gophercloud.ServiceClient, id string) string {
 	return c.ServiceURL("volumes", id, "action")

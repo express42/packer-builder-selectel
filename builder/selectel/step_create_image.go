@@ -36,12 +36,10 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 
 	// Create the image
 	ui.Say(fmt.Sprintf("Creating the image: %s", config.ImageName))
-	res := UploadImage(blockStorageClient, volume, volumeactions.UploadImageOpts{
+	imageId, err := UploadImage(blockStorageClient, volume, volumeactions.UploadImageOpts{
 		ImageName:     config.ImageName,
 		Force: true,
-	})
-	ui.Message(fmt.Sprintf("Image: %s", res.PrettyPrintJSON()))
-	err = res.ExtractErr()
+	}).ExtractImageId()
 	if err != nil {
 		err := fmt.Errorf("Error creating image: %s", err)
 		state.Put("error", err)
@@ -49,17 +47,6 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionHalt
 	}
 
-	type ImageStruct struct {
-	    Id string `json:"image_id"`
-	}
-
-	type Response struct {
-    Image   ImageStruct `json:"os-volume_upload_image"`
-  }
-
-  resp := Response{}
-	res.ExtractInto(&resp)
-  imageId := resp.Image.Id
 	// Set the Image ID in the state
 	ui.Message(fmt.Sprintf("Image: %s", imageId))
 	state.Put("image", imageId)
