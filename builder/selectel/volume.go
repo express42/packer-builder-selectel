@@ -41,7 +41,7 @@ func VolumeV2StateRefreshFunc(
 				"API logs to see why this error occurred.")
 		}
 
-		return v, v.Status, 100, nil
+		return v, v.Status, 50, nil
 	}
 }
 
