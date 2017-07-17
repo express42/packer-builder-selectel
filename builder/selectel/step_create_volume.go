@@ -2,6 +2,7 @@ package selectel
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/hashicorp/packer/packer"
@@ -34,19 +35,18 @@ func (s *StepCreateVolume) Run(state multistep.StateBag) multistep.StepAction {
 		VolumeType:         s.VolumeType,
 	}
 
-	ui.Say(fmt.Sprintf("[DEBUG] Create Options: %#v", createOpts))
+	ui.Say(fmt.Sprintf("Creating volume: %s", s.Name))
+	log.Printf("[DEBUG] Create Options: %#v", createOpts)
 	s.volume, err = volumes.Create(blockStorageClient, createOpts).Extract()
 	if err != nil {
 		err = fmt.Errorf("Error creating OpenStack volume: %s", err)
 		state.Put("error", err)
 		return multistep.ActionHalt
 	}
-	ui.Say(fmt.Sprintf("[INFO] Volume ID: %s", s.volume.ID))
+	ui.Message(fmt.Sprintf("Volume ID: %s", s.volume.ID))
 
 	// Wait for the volume to become available.
-	ui.Say(fmt.Sprintf(
-		"[DEBUG] Waiting for volume (%s) to become available",
-		s.volume.ID))
+	ui.Say(fmt.Sprintf("Waiting for volume to become available..."))
 
 	stateChange := StateChangeConf{
 		Pending:   []string{"downloading", "creating"},

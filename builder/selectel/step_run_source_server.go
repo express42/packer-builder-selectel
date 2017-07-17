@@ -97,7 +97,7 @@ func (s *StepRunSourceServer) Run(state multistep.StateBag) multistep.StepAction
 		bd,
 	}
 
-	ui.Say("Boot server from volume")
+	ui.Message("Boot server from volume")
 	s.server, err = bootfromvolume.Create(computeClient, serverOptsExt).Extract()
 	if err != nil {
 		err := fmt.Errorf("Error launching source server: %s", err)
