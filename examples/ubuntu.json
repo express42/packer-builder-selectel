@@ -12,6 +12,7 @@
         "flavor": "m1.tiny",
         "domain_name": "{{user `domain_name`}}",
         "image_name": "express42-ubuntu16",
+        "disk_format": "qcow2",
         "volume_size": 5,
         "volume_type": "basic.ru-2a",
         "ssh_username": "root",

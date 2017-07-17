@@ -13,7 +13,9 @@ import (
 	"github.com/mitchellh/multistep"
 )
 
-type stepCreateImage struct{}
+type stepCreateImage struct{
+	DiskFormat string
+}
 
 func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	config := state.Get("config").(Config)
@@ -37,7 +39,8 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	// Create the image
 	ui.Say(fmt.Sprintf("Creating the image: %s", config.ImageName))
 	imageId, err := UploadImage(blockStorageClient, volume, volumeactions.UploadImageOpts{
-		ImageName:     config.ImageName,
+		ImageName: config.ImageName,
+		DiskFormat: s.DiskFormat,
 		Force: true,
 	}).ExtractImageId()
 	if err != nil {

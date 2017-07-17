@@ -22,6 +22,7 @@ type RunConfig struct {
 	VolumeSize       int               `mapstructure:"volume_size"`
 	SourceImage      string            `mapstructure:"source_image"`
 	SourceImageName  string            `mapstructure:"source_image_name"`
+	DiskFormat       string            `mapstructure:"disk_format"`
 	Flavor           string            `mapstructure:"flavor"`
 	AvailabilityZone string            `mapstructure:"availability_zone"`
 	RackconnectWait  bool              `mapstructure:"rackconnect_wait"`

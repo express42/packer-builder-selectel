@@ -125,7 +125,9 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		},
 		&common.StepProvision{},
 		&StepStopServer{},
-		&stepCreateImage{},
+		&stepCreateImage{
+		  DiskFormat:       b.config.DiskFormat,
+	  },
 		&stepUpdateImageVisibility{},
 		&stepAddImageMembers{},
 	}
