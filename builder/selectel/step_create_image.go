@@ -38,11 +38,12 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 
 	// Create the image
 	ui.Say(fmt.Sprintf("Creating the image: %s", config.ImageName))
-	imageId, err := UploadImage(blockStorageClient, volume, volumeactions.UploadImageOpts{
+	volumeImage, err := volumeactions.UploadImage(blockStorageClient, volume, volumeactions.UploadImageOpts{
 		ImageName: config.ImageName,
 		DiskFormat: s.DiskFormat,
 		Force: true,
-	}).ExtractImageId()
+	}).Extract()
+
 	if err != nil {
 		err := fmt.Errorf("Error creating image: %s", err)
 		state.Put("error", err)
@@ -51,12 +52,12 @@ func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	}
 
 	// Set the Image ID in the state
-	ui.Message(fmt.Sprintf("Image ID: %s", imageId))
-	state.Put("image", imageId)
+	ui.Message(fmt.Sprintf("Image ID: %s", volumeImage.ImageID))
+	state.Put("image", volumeImage.ImageID)
 
 	// Wait for the image to become ready
 	ui.Say(fmt.Sprintf("Waiting for image to become ready..."))
-	if err := WaitForImage(client, imageId); err != nil {
+	if err := WaitForImage(client, volumeImage.ImageID); err != nil {
 		err := fmt.Errorf("Error waiting for image: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())

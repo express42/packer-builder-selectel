@@ -6,7 +6,6 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
-	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/volumeactions"
 )
 
 // StateRefreshFunc is a function type used for StateChangeConf that is
@@ -43,45 +42,4 @@ func VolumeV2StateRefreshFunc(
 
 		return v, v.Status, 50, nil
 	}
-}
-
-func UploadImage(client *gophercloud.ServiceClient, id string, opts volumeactions.UploadImageOptsBuilder) (r UploadImageResult) {
-	b, err := opts.ToVolumeUploadImageMap()
-	if err != nil {
-		r.Err = err
-		return
-	}
-	_, r.Err = client.Post(uploadURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{202},
-	})
-	return
-}
-
-type commonResult struct {
-	gophercloud.Result
-}
-
-type UploadImageResult struct {
-	commonResult
-}
-
-func (r commonResult) ExtractImageId() (string, error) {
-	type ImageStruct struct {
-	    Id string `json:"image_id"`
-	}
-
-	var s struct {
-    Image   ImageStruct `json:"os-volume_upload_image"`
-  }
-	err := r.ExtractInto(&s)
-	return s.Image.Id, err
-}
-
-
-func attachURL(c *gophercloud.ServiceClient, id string) string {
-	return c.ServiceURL("volumes", id, "action")
-}
-
-func uploadURL(c *gophercloud.ServiceClient, id string) string {
-	return attachURL(c, id)
 }
